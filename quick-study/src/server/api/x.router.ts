@@ -16,7 +16,7 @@ const router = express.Router();
 
 // const { postsGet, postsUpdate, postsDelete, postsCreate } = require('./posts.controllers');
   
-router.get('/create', (req, res) => {
+router.get('/test', (req, res) => {
   res.json("Hello World")
 });
 // router.post('/', upload.single("image") ,postsCreate);
