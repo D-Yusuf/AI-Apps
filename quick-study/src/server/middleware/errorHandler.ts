@@ -1,4 +1,4 @@
-const errorHandler = (error, request, response, next) => {
+export default function customErrorHandler (error, request, response, next)  {
     try {
       return response
         .status(error.status || 500)
@@ -8,4 +8,3 @@ const errorHandler = (error, request, response, next) => {
     }
   };
   
-  module.exports = errorHandler;

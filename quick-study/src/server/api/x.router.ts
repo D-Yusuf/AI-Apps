@@ -1,5 +1,5 @@
-const express = require('express');
-const upload = require('../middleware/multer');
+import express from 'express';
+import upload from '../middleware/multer';
 const router = express.Router();
 
 
@@ -16,7 +16,7 @@ const router = express.Router();
 
 // const { postsGet, postsUpdate, postsDelete, postsCreate } = require('./posts.controllers');
   
-router.get('/', (req, res) => {
+router.get('/create', (req, res) => {
   res.json("Hello World")
 });
 // router.post('/', upload.single("image") ,postsCreate);
@@ -25,4 +25,4 @@ router.get('/', (req, res) => {
 
 // router.put('/:postId', postsUpdate);
 
-module.exports = router;
+export default router;

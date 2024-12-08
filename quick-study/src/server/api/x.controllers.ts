@@ -1,4 +1,4 @@
-const x = require("../models/xShema");
+import x from '../models/UserSchema';
 
 
 

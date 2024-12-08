@@ -1,14 +1,15 @@
-const express = require('express');
-const path = require("path")
-const app = express();
-const connectDb = require('./database');
-const morgan = require('morgan');
-const cors = require("cors")
-const notFoundHandler = require('./middleware/notFoundHandler');
-const errorHandler = require('./middleware/errorHandler');
-const router = require('./api/x.router');
-require("dotenv").config()
+import express from 'express';
+import path from 'path';
+import connectDb from './database';
+import morgan from 'morgan';
+import cors from 'cors';
+import notFoundHandler from './middleware/notFoundHandler';
+import errorHandler from './middleware/errorHandler';
+import router from './api/x.router';
+import dotenv from 'dotenv';
+dotenv.config();
 connectDb();
+const app = express();
 app.use(express.json());
 app.use(cors())
 app.use(morgan("dev"))

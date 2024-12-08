@@ -1,4 +1,5 @@
-const notFoundHandler = (request, response, next) => {
+
+export default function notFoundHandler (request, response, next)  {
     try {
       return response
         .status(404)
@@ -9,4 +10,3 @@ const notFoundHandler = (request, response, next) => {
     }
   };
   
-  module.exports = notFoundHandler;
