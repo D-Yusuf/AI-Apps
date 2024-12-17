@@ -19,3 +19,14 @@ body {
   background: var(--background);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+.pdf-document {
+  width: 100%;
+  max-width: 800px;
+  margin: auto;
+}
+
+.pdf-page {
+  margin-bottom: 16px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
