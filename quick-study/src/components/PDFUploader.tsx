@@ -37,8 +37,8 @@ const PdfUploader: React.FC<Props> = ({ setPdfText, setSelectedFile }) => {
         loadingTask.promise.then(
           (pdfDoc) => {
             const numPages = pdfDoc.numPages;
-            if (numPages > 4) {
-              alert('Please note that due to the limitations of our free service, only the first 4 pages will be considered for processing.');
+            if (numPages > 10) {
+              alert('Please note that due to the limitations of our free service, only the first 10 pages will be considered for processing.');
             }
             for(let i = 1; i <= Math.min(numPages, 4); i++) {
               pdfDoc.getPage(i).then((page) => {

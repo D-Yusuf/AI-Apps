@@ -1,31 +1,34 @@
-import { Document, Page, pdfjs } from 'react-pdf';
-import { useState, useEffect, useRef } from 'react';
-import 'pdfjs-dist/build/pdf.worker.min.mjs';
+import { Document, Page, pdfjs } from "react-pdf";
+import { useState, useEffect, useRef } from "react";
 
-const PDFViewer = ({ file }: { file: File }) => {
-  console.log(file);
-  const [numPages, setNumPages] = useState<number | null>(null);
-  const [pageNumber, setPageNumber] = useState(1);
+// Fix pdf.js workerSrc
+pdfjs.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`
+console.log(pdfjs.version); // Should match the worker's version
+console.log(pdfjs.GlobalWorkerOptions.workerSrc); // Should be the same as the API version
+
+const PDFViewer = ({ file }: { file: File | string }) => {
+  const [numPages, setNumPages] = useState<number>(0);
+  const [pageNumber, setPageNumber] = useState<number>(1);
   const observer = useRef<IntersectionObserver>();
   const pageElementsRef = useRef<(HTMLDivElement | null)[]>([]);
 
-  function onDocumentLoadSuccess({ numPages }: { numPages: number }) {
+  const onDocumentLoadSuccess = ({ numPages }: { numPages: number }) => {
     setNumPages(numPages);
     pageElementsRef.current = pageElementsRef.current.slice(0, numPages);
-  }
+  };
 
-  // The only purpose of this useEffect is so that the page number would update dynamically while scrolling
+  // Intersection observer to track visible pages
   useEffect(() => {
     const options = {
       root: null,
-      rootMargin: '0px',
-      threshold: 0.5, // Adjust the threshold to when you consider the page is visible
+      rootMargin: "0px",
+      threshold: 0.5,
     };
 
     observer.current = new IntersectionObserver((entries) => {
-      const visiblePage = entries.find(entry => entry.isIntersecting);
+      const visiblePage = entries.find((entry) => entry.isIntersecting);
       if (visiblePage) {
-        setPageNumber(Number(visiblePage.target.getAttribute('data-page-number')));
+        setPageNumber(Number(visiblePage.target.getAttribute("data-page-number")));
       }
     }, options);
 
@@ -40,21 +43,33 @@ const PDFViewer = ({ file }: { file: File }) => {
         currentObserver.disconnect();
       }
     };
-  }, [numPages]); // Reinitialize observer when numPages changes
+  }, [numPages]);
 
   return (
     <>
-      <div className="text-center rounded-3xl my-2 z-50 absolute bottom-0 right-4 bg-blue-600 text-white py-1 px-4">
+      {/* Page Counter */}
+      <div className="text-center rounded-3xl my-2 z-50 fixed bottom-4 right-4 bg-blue-600 text-white py-1 px-4">
         {pageNumber}/{numPages}
       </div>
-      <div className="h-[300px] md:h-full overflow-y-scroll">
-        <Document file={file} onLoadSuccess={onDocumentLoadSuccess} className="pdf-document">
-          {Array.from(new Array(numPages), (el, index) => (
-            <div ref={el => { pageElementsRef.current[index] = el; }} data-page-number={index + 1} key={index}>
+
+      {/* PDF Viewer Container */}
+      <div className="h-[600px] md:h-full overflow-y-scroll">
+        <Document
+          file={file}
+          onLoadSuccess={onDocumentLoadSuccess}
+          loading="Loading PDF..."
+          error="Failed to load PDF."
+        >
+          {/* Safely map pages */}
+          {Array.from({ length: numPages }, (_, index) => (
+            <div
+              key={index}
+              ref={(el) => (pageElementsRef.current[index] = el)}
+              data-page-number={index + 1}
+              className="mb-4"
+            >
               <Page
-                key={`page_${index + 1}`}
                 pageNumber={index + 1}
-                className="pdf-page"
                 renderAnnotationLayer={false}
                 renderTextLayer={false}
               />
