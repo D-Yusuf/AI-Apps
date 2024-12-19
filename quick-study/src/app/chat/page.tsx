@@ -73,9 +73,10 @@ export default function Page({ children }: { children: React.ReactNode }) {
     tool: "#fff",
     data: "#fff",
   };
-  async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
+  async function onChange(e: React.ChangeEvent<HTMLTextAreaElement>) {
     e.preventDefault();
-
+    handleInputChange(e);
+    setSelectedFile(null);
     const file = fileInputRef.current?.files?.[0];
 
     if (file && file.type === 'application/pdf') {
@@ -87,24 +88,24 @@ export default function Page({ children }: { children: React.ReactNode }) {
         console.error('Error reading PDF:', error);
       }
     }
-
-    if (pdfText) {
+  }
+  async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    if(pdfText){
       setMessages([
         ...messages,
         {
           id: "0000",
           role: "system",
-          content: `use this pdf content to answer the following questions by the user unless user specifies otherwise. You are a professional at what the pdf is about. 
+          content: `forget the pdfs sent before and focus on this pdf content to answer the following questions, unless user specifies otherwise, by the user unless user specifies otherwise. You are a professional at what the pdf is about. 
           You answer all questions no matter what the pdf contains. ${pdfText}`,
           createdAt: new Date(),
         },
       ]);
     }
-
     handleSubmit(e);
     console.log(input);
   }
-  const [file, setFile] = useState<File | null>(null);
 
   const onDrop = (acceptedFiles: File[]) => {
     if (acceptedFiles && acceptedFiles[0]) {
@@ -124,50 +125,31 @@ export default function Page({ children }: { children: React.ReactNode }) {
   });
 
   const renderFilePreview = () => {
-    if (!file) return null;
+    if (!selectedFile) return null;
 
-    const fileType = file.type.split("/")[0];
-    const fileName = file.name;
-
-    if (fileType === "image") {
-      return (
-        <div className="relative">
-          <Image
-            src={URL.createObjectURL(file)}
-            alt={fileName}
-            className="w-16 h-16 rounded-lg"
-            width={64}
-            height={64}
-          />
-          <button
-            onClick={() => setFile(null)}
-            className="absolute top-0 left-0 text-white bg-black rounded-full hover:text-red-500"
-          >
-            <XMarkIcon className="w-5 h-5" />
-          </button>
+    return (
+      <div className="flex items-center bg-gray-700 p-2 rounded-lg relative w-fit mb-2">
+        <div className="bg-pink-500 p-2 rounded-full">
+          <DocumentTextIcon className="w-5 h-5 text-white" />
         </div>
-      );
-    } else {
-      return (
-        <div className="flex items-center bg-gray-700 p-2 rounded-lg relative">
-          <div className="bg-pink-500 p-2 rounded-full">
-            <DocumentTextIcon className="w-5 h-5 text-white" />
-          </div>
-          <div className="ml-2">
-            <span className="text-white">{fileName}</span>
-            <div className="text-gray-400 text-sm">
-              {fileType.toUpperCase()}
-            </div>
-          </div>
-          <button
-            onClick={() => setFile(null)}
-            className="absolute top-0 right-0 text-white bg-black rounded-full hover:text-red-500"
-          >
-            <XMarkIcon className="w-5 h-5" />
-          </button>
+        <div className="ml-2">
+          <span className="text-white">{selectedFile.name}</span>
+          <div className="text-gray-400 text-sm">PDF</div>
         </div>
-      );
-    }
+        <button
+          onClick={() => {
+            setSelectedFile(null);
+            setPdfText("");
+            if (fileInputRef.current) {
+              fileInputRef.current.value = "";
+            }
+          }}
+          className="absolute -top-2 -right-2 text-white bg-black rounded-full hover:text-red-500"
+        >
+          <XMarkIcon className="w-5 h-5" />
+        </button>
+      </div>
+    );
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -187,8 +169,8 @@ export default function Page({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex h-screen">
-      <div className="overflow-auto flex-grow">
-        <div className="w-full h-screen flex flex-col px-4">
+      <div className="flex-grow overflow-auto">
+        <div className="w-full h-full flex flex-col px-4">
           <div {...getRootProps()} className="flex-grow overflow-y-auto py-4" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
             <input {...getInputProps()} />
             <div className="response" style={{ overflow: 'hidden' }}>
@@ -236,18 +218,15 @@ export default function Page({ children }: { children: React.ReactNode }) {
                 : "Error"}
             </div>
           </div>
-          <div className="w-full bg-gray-800 p-4 rounded-t-lg">
-            <form
-              onSubmit={onSubmit}
-              className="flex flex-col items-center w-full relative"
-            >
+          <div className="w-full bg-gray-800 p-4 rounded-t-lg gap-2">
+            {renderFilePreview()}
+            <form onSubmit={onSubmit} className="flex flex-col items-center w-full relative">
               <input
                 type="file"
                 ref={fileInputRef}
                 style={{ display: 'none' }}
                 accept="application/pdf"
               />
-              <div className="w-full mb-2">{renderFilePreview()}</div>
               <div className="flex items-center w-full">
                 <button
                   type="button"
@@ -259,7 +238,7 @@ export default function Page({ children }: { children: React.ReactNode }) {
                 <TextareaAutosize
                   name="input-field"
                   placeholder="Type your message..."
-                  onChange={handleInputChange}
+                  onChange={onChange}
                   onKeyDown={handleKeyDown}
                   value={input}
                   className="flex-grow p-4 bg-gray-200 text-gray-900 border-none rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ml-2 resize-none"
@@ -277,11 +256,7 @@ export default function Page({ children }: { children: React.ReactNode }) {
                     stroke="currentColor"
                     className="w-5 h-5"
                   >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      d="M4.5 12h15m0 0l-6-6m6 6l-6 6"
-                    />
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M4.5 12h15m0 0l-6-6m6 6l-6 6" />
                   </svg>
                 </button>
               </div>
@@ -292,14 +267,9 @@ export default function Page({ children }: { children: React.ReactNode }) {
           </p>
         </div>
       </div>
-      <div className="overflow-auto" style={{ flexBasis: 'auto' }}>
-        {pdfText ? (
+      <div className="overflow-auto" style={{ flexBasis: 'auto', maxHeight: '100vh' }}>
+        {pdfText && (
           <PDFViewer file={selectedFile as File} />
-        ) : (
-          <PdfUploader
-            setPdfText={setPdfText}
-            setSelectedFile={setSelectedFile}
-          />
         )}
       </div>
     </div>
