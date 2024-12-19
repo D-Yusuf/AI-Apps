@@ -1,7 +1,15 @@
-const { model, Schema } = require('mongoose');
+import { model, Schema } from 'mongoose';
 
-const x = new Schema({
-  name: {type: String, default: "Anonymous"}
+const UserSchema = new Schema({
+  username: {type: String, default: "Anonymous"},
+  email: {type: String, required: true, unique: true},
+  password: {type: String, required: true},
+  profilePicture: {type: String, default: ""},
+  calendar: {type: Array, default: []},
+  flashcards: [{type: Schema.Types.ObjectId, ref: "Flashcards"}],
+  chats: {type: Array, default: []},
+
+  createdAt: {type: Date, default: Date.now},
 });
 
-module.exports = model('X', x);
+export default model('User', UserSchema);

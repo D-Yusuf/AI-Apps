@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import PdfUploader from "@/components/PDFUploader";
 import PDFViewer from "@/components/PDFViewer";
 import { useChat } from "ai/react";
@@ -14,16 +14,13 @@ import {
 } from "@heroicons/react/24/outline";
 import TextareaAutosize from 'react-textarea-autosize';
 import ReactMarkdown from 'react-markdown';
+import { getPdfText } from '@/utils/pdfUtils';
 
 export default function Page({ children }: { children: React.ReactNode }) {
   const [pdfText, setPdfText] = useState<string>("");
-  const [selectedFile, setSelectedFile] = useState<File>();
-  const [leftWidth, setLeftWidth] = useState<number>(50);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
-  const handleDrag = (e: React.MouseEvent) => {
-    const newLeftWidth = (e.clientX / window.innerWidth) * 100;
-    setLeftWidth(newLeftWidth);
-  };
   type User = {
     id: string;
     name: string;
@@ -78,6 +75,19 @@ export default function Page({ children }: { children: React.ReactNode }) {
   };
   async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+
+    const file = fileInputRef.current?.files?.[0];
+
+    if (file && file.type === 'application/pdf') {
+      try {
+        const pdfText = await getPdfText(file);
+        setPdfText(pdfText);
+        setSelectedFile(file);
+      } catch (error) {
+        console.error('Error reading PDF:', error);
+      }
+    }
+
     if (pdfText) {
       setMessages([
         ...messages,
@@ -90,6 +100,7 @@ export default function Page({ children }: { children: React.ReactNode }) {
         },
       ]);
     }
+
     handleSubmit(e);
     console.log(input);
   }
@@ -97,7 +108,13 @@ export default function Page({ children }: { children: React.ReactNode }) {
 
   const onDrop = (acceptedFiles: File[]) => {
     if (acceptedFiles && acceptedFiles[0]) {
-      setFile(acceptedFiles[0]);
+      const file = acceptedFiles[0];
+      setSelectedFile(file);
+      if (fileInputRef.current) {
+        const dataTransfer = new DataTransfer();
+        dataTransfer.items.add(file);
+        fileInputRef.current.files = dataTransfer.files;
+      }
     }
   };
 
@@ -170,30 +187,7 @@ export default function Page({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex h-screen">
-      <div className="overflow-auto" style={{ width: `${leftWidth}%` }}>
-        {pdfText ? (
-          <PDFViewer file={selectedFile as File} />
-        ) : (
-          <PdfUploader
-            setPdfText={setPdfText}
-            setSelectedFile={setSelectedFile}
-          />
-        )}
-      </div>
-      <div
-        className="w-1 bg-gray-300 cursor-ew-resize"
-        onMouseDown={(e) => {
-          document.addEventListener("mousemove", handleDrag);
-          document.addEventListener(
-            "mouseup",
-            () => {
-              document.removeEventListener("mousemove", handleDrag);
-            },
-            { once: true }
-          );
-        }}
-      />
-      <div className="overflow-auto" style={{ width: `${100 - leftWidth}%` }}>
+      <div className="overflow-auto flex-grow">
         <div className="w-full h-screen flex flex-col px-4">
           <div {...getRootProps()} className="flex-grow overflow-y-auto py-4" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
             <input {...getInputProps()} />
@@ -237,7 +231,6 @@ export default function Page({ children }: { children: React.ReactNode }) {
                           m.content
                         )}
                       </div>
-                      
                     </div>
                   ))
                 : "Error"}
@@ -248,6 +241,12 @@ export default function Page({ children }: { children: React.ReactNode }) {
               onSubmit={onSubmit}
               className="flex flex-col items-center w-full relative"
             >
+              <input
+                type="file"
+                ref={fileInputRef}
+                style={{ display: 'none' }}
+                accept="application/pdf"
+              />
               <div className="w-full mb-2">{renderFilePreview()}</div>
               <div className="flex items-center w-full">
                 <button
@@ -292,6 +291,16 @@ export default function Page({ children }: { children: React.ReactNode }) {
             All rights reserved {new Date().getFullYear()}©
           </p>
         </div>
+      </div>
+      <div className="overflow-auto" style={{ flexBasis: 'auto' }}>
+        {pdfText ? (
+          <PDFViewer file={selectedFile as File} />
+        ) : (
+          <PdfUploader
+            setPdfText={setPdfText}
+            setSelectedFile={setSelectedFile}
+          />
+        )}
       </div>
     </div>
   );

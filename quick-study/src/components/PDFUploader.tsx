@@ -54,7 +54,7 @@ const PdfUploader: React.FC<Props> = ({ setPdfText, setSelectedFile }) => {
             }
           },
           (reason) => {
-            console.error(`Error during PDF loading: ${reason}`);
+            alert(`Error during PDF loading: ${reason}`);
           }
         );
       }

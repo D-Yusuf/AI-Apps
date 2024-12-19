@@ -1,20 +1,37 @@
 import { Document, Page, pdfjs } from "react-pdf";
 import { useState, useEffect, useRef } from "react";
+import { PlusIcon, MinusIcon, ArrowPathIcon } from "@heroicons/react/24/outline";
 
 // Fix pdf.js workerSrc
-pdfjs.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/${pdfjs.version}/pdf.worker.min.js`
+pdfjs.GlobalWorkerOptions.workerSrc = `https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.worker.min.mjs`
 console.log(pdfjs.version); // Should match the worker's version
 console.log(pdfjs.GlobalWorkerOptions.workerSrc); // Should be the same as the API version
 
 const PDFViewer = ({ file }: { file: File | string }) => {
   const [numPages, setNumPages] = useState<number>(0);
   const [pageNumber, setPageNumber] = useState<number>(1);
+  const [scale, setScale] = useState<number>(1.0);
+  const [rotation, setRotation] = useState<number>(0);
   const observer = useRef<IntersectionObserver>();
   const pageElementsRef = useRef<(HTMLDivElement | null)[]>([]);
 
   const onDocumentLoadSuccess = ({ numPages }: { numPages: number }) => {
     setNumPages(numPages);
     pageElementsRef.current = pageElementsRef.current.slice(0, numPages);
+  };
+
+  const handleZoomIn = () => setScale((prevScale) => prevScale + 0.1);
+  const handleZoomOut = () => setScale((prevScale) => Math.max(prevScale - 0.1, 0.5));
+  const handleRotate = () => setRotation((prevRotation) => (prevRotation + 90) % 360);
+
+  const handlePageNumberClick = () => {
+    const page = prompt(`Enter page number (1-${numPages}):`, `${pageNumber}`);
+    if (page) {
+      const pageNum = parseInt(page, 10);
+      if (pageNum >= 1 && pageNum <= numPages) {
+        setPageNumber(pageNum);
+      }
+    }
   };
 
   // Intersection observer to track visible pages
@@ -46,21 +63,31 @@ const PDFViewer = ({ file }: { file: File | string }) => {
   }, [numPages]);
 
   return (
-    <>
-      {/* Page Counter */}
-      <div className="text-center rounded-3xl my-2 z-50 fixed bottom-4 right-4 bg-blue-600 text-white py-1 px-4">
-        {pageNumber}/{numPages}
-      </div>
-
+    <div className="relative h-full">
       {/* PDF Viewer Container */}
-      <div className="h-[600px] md:h-full overflow-y-scroll">
+      <div className="h-full overflow-y-scroll">
+        {/* Toolbar */}
+        <div className="sticky top-0 flex items-center justify-center bg-gray-800 text-white p-2 z-10">
+          <button onClick={handleZoomOut} className="p-2 rounded hover:bg-gray-700">
+            <MinusIcon className="w-5 h-5" />
+          </button>
+          <button onClick={handleZoomIn} className="p-2 rounded hover:bg-gray-700">
+            <PlusIcon className="w-5 h-5" />
+          </button>
+          <button onClick={handleRotate} className="p-2 rounded hover:bg-gray-700">
+            <ArrowPathIcon className="w-5 h-5" />
+          </button>
+          <div className="text-center cursor-pointer p-2 rounded hover:bg-gray-700" onClick={handlePageNumberClick}>
+            {pageNumber}/{numPages}
+          </div>
+        </div>
+
         <Document
           file={file}
           onLoadSuccess={onDocumentLoadSuccess}
           loading="Loading PDF..."
           error="Failed to load PDF."
         >
-          {/* Safely map pages */}
           {Array.from({ length: numPages }, (_, index) => (
             <div
               key={index}
@@ -70,6 +97,8 @@ const PDFViewer = ({ file }: { file: File | string }) => {
             >
               <Page
                 pageNumber={index + 1}
+                scale={scale}
+                rotate={rotation}
                 renderAnnotationLayer={false}
                 renderTextLayer={false}
               />
@@ -77,7 +106,7 @@ const PDFViewer = ({ file }: { file: File | string }) => {
           ))}
         </Document>
       </div>
-    </>
+    </div>
   );
 };
 
