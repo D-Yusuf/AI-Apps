@@ -6,6 +6,7 @@ import { useChat } from "ai/react";
 import Image from "next/image";
 import assistantAvatar from "../../images/assistent-avatar.webp";
 import { useDropzone } from "react-dropzone";
+import MarkdownRenderer from "@/components/MarkdownRenderer";
 import {
   DocumentTextIcon,
   XMarkIcon,
@@ -201,7 +202,7 @@ export default function Page({ children }: { children: React.ReactNode }) {
                       >
                         {m.role === "assistant" ? (
                           <div className="flex flex-col">
-                            <ReactMarkdown>{m.content}</ReactMarkdown>
+                            <MarkdownRenderer>{m.content}</MarkdownRenderer>
                             <button
                               onClick={() => copyToClipboard(m.content)}
                               className="p-1 absolute -bottom-4 left-1 bg-white text-black rounded-full hover:bg-gray-300 focus:outline-none opacity-0 group-hover:opacity-100 transition-opacity"
