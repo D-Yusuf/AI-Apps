@@ -3,7 +3,7 @@ import React, { useState, useRef } from "react";
 import Chat from "@/components/Chat";
 import PDFViewer from "@/components/PDFViewer";
 
-export default function Page({ children }: { children: React.ReactNode }) {
+export default function Page() {
   const [pdfText, setPdfText] = useState<string>("");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const fileInputRef = useRef<HTMLInputElement | null>(null);
