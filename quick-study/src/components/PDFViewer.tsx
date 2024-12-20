@@ -63,7 +63,7 @@ const PDFViewer = ({ file }: { file: File | string }) => {
   }, [numPages]);
 
   return (
-    <div className="relative h-full">
+    <div className="relative h-screen">
       {/* PDF Viewer Container */}
       <div className="h-full overflow-y-scroll">
         {/* Toolbar */}

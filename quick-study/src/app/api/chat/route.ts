@@ -12,7 +12,6 @@ export async function POST(req: Request) {
   return createDataStreamResponse({
     execute: dataStream => {
       dataStream.writeData('initialized call');
-
       const result = streamText({
         model: openai('gpt-4o-mini'),
     messages: [
