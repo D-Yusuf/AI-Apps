@@ -137,17 +137,17 @@ export default function ChatComponent({ setPdfText, setSelectedFile, fileInputRe
   }
 
   return (
-    <div className="flex flex-col h-screen relative">
+    <div className="flex flex-col h-screen relative bg-gray-900">
       <div className="flex-grow overflow-y-auto">
-        <div className="w-full h-full flex flex-col px-4">
-          <div {...getRootProps()} className="flex-grow overflow-y-auto py-4" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
+        <div className="w-full h-full flex flex-col items-center px-4">
+          <div {...getRootProps()} className="flex-grow overflow-y-auto py-4 w-full max-w-3xl" style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}>
             <input {...getInputProps()} />
-            <div className="response mb-36" style={{ overflow: 'hidden' }}> {/* messages container */}
+            <div className="response mb-36 flex flex-col items-center w-full max-w-3xl" style={{ overflow: 'hidden' }}>
               {messages.length > 0
                 ? messages.filter(m => m.role !== "system").map((m) => (
                     <div
                       key={m.id}
-                      className={`chat-line ${m.role} flex items-start mb-8 ${
+                      className={`chat-line ${m.role} flex items-start mb-8 w-full ${
                         m.role === "user" ? "justify-end" : "justify-start"
                       }`}
                     >
@@ -189,7 +189,7 @@ export default function ChatComponent({ setPdfText, setSelectedFile, fileInputRe
           </div>
         </div>
       </div>
-      <div className="bg-gray-800 p-4 w-1/2 mx-auto rounded-lg sticky bottom-8">
+      <div className="bg-gray-800 p-4 w-full max-w-3xl mx-auto rounded-lg sticky bottom-8">
         {renderFilePreview()}
         <form onSubmit={onSubmit} className="flex items-center w-full">
           <input
