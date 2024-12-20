@@ -95,7 +95,7 @@ const CodeBlock: FC<Props> = memo(({ language, value }) => {
       3,
       true
     )}${fileExtension}`
-    // const fileName = window.prompt('Enter file name' || '', suggestedFileName)
+    const fileName = window.prompt('Enter file name' || '', suggestedFileName)
 
     // if (!fileName) {
     //   // User pressed cancel on prompt.
@@ -105,7 +105,7 @@ const CodeBlock: FC<Props> = memo(({ language, value }) => {
     const blob = new Blob([value], { type: 'text/plain' })
     const url = URL.createObjectURL(blob)
     const link = document.createElement('a')
-    link.download = fileName
+    link.download = fileName || suggestedFileName
     link.href = url
     link.style.display = 'none'
     document.body.appendChild(link)
@@ -166,8 +166,8 @@ const MarkdownRenderer: FC<MarkdownRendererProps> = (props) => {
         p({ children }) {
           return <p className="mb-2 last:mb-0">{children}</p>;
         },
-        code({ node, inline, className, children, ...props }) {
-          if (children && children.length) {
+        code({ node, className, children, ...props }) {
+          if (children) {
             if (children[0] == "▍") {
               return (
                 <span className="mt-1 cursor-default animate-pulse">▍</span>
@@ -179,13 +179,13 @@ const MarkdownRenderer: FC<MarkdownRendererProps> = (props) => {
 
           const match = /language-(\w+)/.exec(className || "");
 
-          if (inline) {
-            return (
-              <code className={className} {...props}>
-                {children}
-              </code>
-            );
-          }
+        //   if (inline) {
+        //     return (
+        //       <code className={className} {...props}>
+        //         {children}
+        //       </code>
+        //     );
+        //   }
 
           return (
             <CodeBlock
