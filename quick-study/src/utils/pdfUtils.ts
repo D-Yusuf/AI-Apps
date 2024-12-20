@@ -23,7 +23,7 @@ export const getPdfText = async (pdfFile: File): Promise<string> => {
           (pdfDoc) => {
             const numPages = pdfDoc.numPages;
             let pdfText = '';
-            const pagePromises = [];
+            const pagePromises: Promise<void>[] = [];
 
             for (let i = 1; i <= Math.min(numPages, 10); i++) {
               pagePromises.push(
