@@ -91,7 +91,7 @@ const PDFViewer = ({ file }: { file: File | string }) => {
           {Array.from({ length: numPages }, (_, index) => (
             <div
               key={index}
-              ref={(el) => (pageElementsRef.current[index] = el)}
+              ref={(el) => {pageElementsRef.current[index] = el}}
               data-page-number={index + 1}
               className="mb-4"
             >
